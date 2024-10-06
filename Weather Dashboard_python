@@ -1,0 +1,62 @@
+weather_dashboard/
+│
+├── main.py           # Главная логика приложения
+├── weather_api.py     # Модуль для работы с API
+├── data_processing.py # Модуль для обработки данных
+├── visualization.py   # Модуль для визуализации данных
+└── README.md          # Описание проекта
+
+Берем API-ключи с https://openweathermap.org/
+
+pip install requests matplotlib
+////////////
+from weather_api import get_weather_data
+from data_processing import process_weather_data
+from visualization import plot_weather
+
+def main():
+    city = input("Введите название города: ")
+    weather_data = get_weather_data(city)
+    
+    if weather_data:
+        processed_data = process_weather_data(weather_data)
+        print(f"Текущая погода в {city}: {processed_data['description']}")
+        print(f"Температура: {processed_data['temp']}°C")
+        print(f"Влажность: {processed_data['humidity']}%")
+        plot_weather(processed_data)
+    else:
+        print("Не удалось получить данные о погоде. Проверьте название города или API-ключ.")
+
+if __name__ == "__main__":
+    main()
+////////////////////
+import requests
+
+API_KEY = "your_openweather_api_key"  # Вставь свой API-ключ
+
+def get_weather_data(city):
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric&lang=ru"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Проверка статуса ответа
+        return response.json()
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP error: {http_err}")
+    except Exception as err:
+        print(f"Error: {err}")
+    
+    return None
+////////////////
+import matplotlib.pyplot as plt
+
+def plot_weather(data):
+    labels = ['Температура (°C)', 'Влажность (%)', 'Скорость ветра (м/с)']
+    values = [data['temp'], data['humidity'], data['wind_speed']]
+    
+    fig, ax = plt.subplots()
+    ax.bar(labels, values, color=['blue', 'green', 'red'])
+    ax.set_ylabel('Значения')
+    ax.set_title('Текущая погода')
+    
+    plt.show()
